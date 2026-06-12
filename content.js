@@ -3,6 +3,13 @@
 (function() {
   'use strict';
 
+  // Garde anti double-injection : une page peut etre couverte a la fois par
+  // les content_scripts statiques du manifest et par un enregistrement
+  // dynamique (sites personnalises / tous les sites)
+  if (window.PseudoShield && window.PseudoShield._contentLoaded) return;
+  if (!window.PseudoShield) window.PseudoShield = {};
+  window.PseudoShield._contentLoaded = true;
+
   console.log('[PseudoShield] Content script chargé sur', location.hostname);
 
   let isEnabled = true;

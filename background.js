@@ -1,6 +1,13 @@
 // background.js
 // Service worker : etat global, messages inter-composants, badge compteur
 // Art. 4(5) RGPD — pseudonymisation (pas anonymisation)
+
+// Chrome (service worker MV3) : charger le module des sites personnalises.
+// Firefox (event page) le charge via background.scripts dans le manifest.
+if (typeof importScripts === 'function') {
+  importScripts('utils/custom-sites.js');
+}
+
 (function() {
   'use strict';
 
@@ -179,6 +186,11 @@
       // Mise a jour : lancer la migration v1 → v2
       migrateStorageV1toV2();
     }
+
+    // Resynchroniser les content scripts dynamiques (sites personnalises,
+    // mode tous les sites) : ils ne survivent pas a une mise a jour de
+    // l'extension, contrairement au storage et aux permissions accordees
+    self.PseudoShield?.CustomSites?.syncRegisteredSites();
   });
 
   // Nettoyage des anciennes cles v1 apres 30 jours

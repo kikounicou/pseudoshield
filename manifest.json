@@ -9,7 +9,11 @@
     "storage",
     "activeTab",
     "clipboardRead",
-    "alarms"
+    "alarms",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
   ],
   "browser_specific_settings": {
     "gecko": {
@@ -22,7 +26,7 @@
   },
   "background": {
     "service_worker": "background.js",
-    "scripts": ["background.js"]
+    "scripts": ["utils/custom-sites.js", "background.js"]
   },
   "action": {
     "default_popup": "popup.html",

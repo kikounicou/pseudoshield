@@ -208,12 +208,20 @@
 
     renderSites();
 
+    const CustomSites = self.PseudoShield.CustomSites;
+
     document.getElementById('sites-list').addEventListener('click', async (e) => {
       if (e.target.classList.contains('btn-remove')) {
         const idx = parseInt(e.target.dataset.index);
+        const domain = whitelist[idx];
         whitelist.splice(idx, 1);
         await chrome.storage.local.set({ pseudoshield_whitelist: whitelist });
         renderSites();
+
+        // Site personnalise : desenregistrer le script et revoquer la permission
+        if (domain && !CustomSites.BUILT_IN_DOMAINS.includes(domain)) {
+          await CustomSites.unregisterSite(domain);
+        }
       }
     });
 
@@ -234,6 +242,18 @@
         return;
       }
 
+      // Site personnalise (hors plateformes integrees) : demander la
+      // permission d'hote au navigateur PUIS enregistrer le content script.
+      // permissions.request doit etre le premier await du geste utilisateur.
+      if (!CustomSites.BUILT_IN_DOMAINS.includes(domain)) {
+        const granted = await chrome.permissions.request({ origins: CustomSites.originsFor(domain) });
+        if (!granted) {
+          alert('Permission refusee : le site n\'a pas ete ajoute.\nPseudoShield a besoin de votre accord pour s\'activer sur ce domaine.');
+          return;
+        }
+        await CustomSites.registerSite(domain);
+      }
+
       whitelist.push(domain);
       await chrome.storage.local.set({ pseudoshield_whitelist: whitelist });
       input.value = '';
@@ -248,7 +268,20 @@
     });
 
     document.getElementById('all-sites-toggle').addEventListener('change', async (e) => {
-      await chrome.storage.local.set({ pseudoshield_allSites: e.target.checked });
+      if (e.target.checked) {
+        // Demander la permission globale (prompt navigateur explicite) —
+        // premier await du geste utilisateur
+        const granted = await chrome.permissions.request({ origins: ['https://*/*'] });
+        if (!granted) {
+          e.target.checked = false;
+          return;
+        }
+        await CustomSites.registerAllSites();
+        await chrome.storage.local.set({ pseudoshield_allSites: true });
+      } else {
+        await CustomSites.unregisterAllSites();
+        await chrome.storage.local.set({ pseudoshield_allSites: false });
+      }
     });
   }
 

@@ -11,6 +11,7 @@ PseudoShield intercepts paste events (Ctrl+V) on major AI platforms and automati
 - **GDPR compliance tools** — Art. 30 audit journal (CSV/JSON export), Art. 4/Art. 9 categorization, correspondence table
 - **100% local** — zero telemetry, no server, no account, Web Crypto API (SHA-256)
 - **6 AI platforms** — Claude.ai, ChatGPT, DeepSeek, Gemini, Copilot, Perplexity
+- **Custom sites** — add self-hosted AI platforms (LibreChat, Open WebUI…) from Options → Sites; each domain requires an explicit browser permission grant (nothing by default)
 
 ## How it works
 
@@ -36,6 +37,10 @@ The extension intercepts the paste, detects PII using regex + validation, replac
 | Copilot | copilot.microsoft.com | Textarea |
 | Gemini | gemini.google.com | Quill |
 | Perplexity | perplexity.ai | Quill |
+
+### Custom sites
+
+Self-hosted and internal AI platforms (LibreChat, Open WebUI, AnythingLLM…) can be added in **Options → Sites**. The browser then shows its native permission prompt for that domain only — no broad host access is requested at install time, and every grant is revocable at any time from `chrome://extensions`. Text insertion falls back to the generic adapter (`execCommand` + native value setter), which handles standard textareas and contenteditable editors.
 
 ## Installation
 
